@@ -1,0 +1,5 @@
+---
+  - include: pre.yml
+    become: yes
+  - include: fedora.yml
+    become: yes

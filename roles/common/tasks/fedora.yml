@@ -1,0 +1,115 @@
+---
+- name: Turn off SElinux
+  command: setenforce 0
+
+- name: Patch System
+  dnf: name="*" state=latest
+
+- name: Install Adobe Repos
+  dnf: name={{item}} state=present
+  with_items:
+    - http://linuxdownload.adobe.com/adobe-release/adobe-release-x86_64-1.0-1.noarch.rpm
+
+- name: Install RPM Fusion Repos
+  dnf: name={{item}} state=present
+  with_items:
+    - https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ansible_distribution_major_version}}.noarch.rpm
+    - https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ansible_distribution_major_version}}.noarch.rpm
+
+- name: Install Google Chrome
+  dnf: name=https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm state=present
+
+- name: Install keys for Adobe, RPM Fusion Repos
+  rpm_key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-free-fedora-30
+  rpm_key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-31
+  rpm_key: key=/etc/pki/rpm-gpg/RPM-GPG-KEY-adobe-linux state=present
+  rpm_key: key=https://dl-ssl.google.com/linux/linux_signing_key.pub state=present
+
+- name: Install Packages I Use
+  dnf: name={{item}} state=latest
+  with_items:
+    - chrome-gnome-shell
+    - compat-ffmpeg28
+    - dconf
+    - flash-plugin
+    - fzf
+    - gimp
+    - gnome-tweak-tool
+    - htop
+    - icedtea-web
+    - iftop
+    - inkscape
+    - iotop
+      # - kodi
+    - libselinux-python
+    - mcelog
+    - mediawriter
+    - ncdu
+    - neovim
+    - nodejs
+    - powerline-fonts
+    - powertop
+    - python3-pyflakes
+    - python3-pylint
+    - python3-neovim
+    - redhat-rpm-config
+    - remmina
+    - ripgrep
+    - ruby-devel
+    - tmux
+    - tuned
+    - vim
+    - weechat
+    - wireshark
+    - nodejs-yarn
+    - youtube-dl
+    - zsh
+    - "@Development Tools"
+
+
+- name: Install Dropbox
+  dnf: name='https://www.dropbox.com/download?dl=packages/fedora/nautilus-dropbox-2019.02.14-1.fedora.x86_64.rpm' state=present
+
+- name: Some services "May separate this so that one happens only on laptop"
+  systemd: name={{item}} enabled=yes
+  with_items:
+    - fstrim.service
+    - fstrim.timer
+    - mcelog
+    - sshd
+
+- name: Add my hosts to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    insertafter: EOF
+    block: |
+      160.111.248.30 work eol-mngmt.si.edu
+
+- name: Speed up patching
+  blockinfile:
+    path: /etc/dnf/dnf.conf
+    insertafter: EOF
+    block: |
+      fastestmirror=true
+      deltarpm=true
+
+- name: Fix discards on lvm for SSD Drives
+  lineinfile:
+    dest: /etc/lvm/lvm.conf
+    regexp: "issue_discards = 0"
+    line: "\tissue_discards = 1"
+    backrefs: yes
+
+- name: Tune Network for Desktop
+  command: tuned-adm profile desktop
+
+- name: Install a few things from flatpak
+  flatpak:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - https://flathub.org/repo/appstream/com.spotify.Client.flatpakref
+    - https://flathub.org/repo/appstream/org.videolan.VLC.flatpakref
+    - https://flathub.org/repo/appstream/com.transmissionbt.Transmission.flatpakref
+    - https://flathub.org/repo/appstream/com.skype.Client.flatpakref
+  ignore_errors: yes

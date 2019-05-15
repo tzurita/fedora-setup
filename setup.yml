@@ -1,0 +1,10 @@
+- name: Playbook to setup my local machine with my basic customizations
+  hosts: local
+  pre_tasks:
+    - name: Playbook to setup my local machine with my basic customizations
+      set_fact:
+        ansible_python_interpreter: "/usr/bin/python3"
+  roles:
+    - common
+    - { role: mashimom.oh-my-zsh, ohmyzsh_theme: "lambda" }
+    - { role: tzurita.dotfiles }

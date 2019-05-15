@@ -1,0 +1,4 @@
+---
+- name: tzurita.dotfiles
+- name: tvieira.powerline-fonts
+- name: mashimom.oh-my-zsh

@@ -1,0 +1,11 @@
+---
+- name: Make sure that the git directory exsists
+  file:
+    path: "{{ ansible_env.HOME }}/git"
+    state: directory
+    mode: 0755
+
+- name: Make sure git is installed
+  dnf:
+    name: git
+    state: present
